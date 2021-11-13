@@ -20,6 +20,11 @@ Para entender mais sobre a arquitetura proposta, veja a figura a baixo.
 
 ## Instalação
 
+### Depedências
+* Docker
+* Poetry
+* Python >= 3.9
+
 ### Banco de Dados
 
 Para criar o banco de dados que será utilizado nesse projeto, antes você precisa instalar o PostgreSQL:
@@ -42,4 +47,4 @@ Para configurar o banco de dados, execute na raiz do projeto em seu terminal:
 
 ## Execução
 
-TODO
+1. Pessoas API -> [Documentação](/mercadinho/pessoas_api)

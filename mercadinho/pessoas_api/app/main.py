@@ -83,7 +83,7 @@ def update_employee(
     employee = employee.dict()
     db_employee = crud.get_employee_by_id(db, id=employee_id)
     if db_employee is None:
-        raise HTTPException(status_code=400, detail="User not found!")
+        raise HTTPException(status_code=404, detail="User not found!")
 
     for key, value in dict(employee).items():
         if value is None:

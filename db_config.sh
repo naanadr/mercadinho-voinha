@@ -13,26 +13,6 @@ echo "------ Drop and Create ROLES ------"
 docker exec -it postgres14 psql -U postgres -d $database -c "DROP ROLE IF EXISTS admin_mercadinho"
 docker exec -it postgres14 psql -U postgres -d $database -c "CREATE ROLE admin_mercadinho SUPERUSER NOCREATEDB CREATEROLE NOINHERIT LOGIN PASSWORD 'super_senha'"
 
-docker exec -it postgres14 psql -U postgres -d $database -c "DROP ROLE IF EXISTS user_rh"
-docker exec -it postgres14 psql -U postgres -d $database -c "CREATE ROLE user_rh NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN PASSWORD 'userrhpwd';
-GRANT INSERT ON TABLE public.tb_funcionarios TO user_rh;
-GRANT SELECT ON TABLE public.tb_funcionarios TO user_rh;"
-
-docker exec -it postgres14 psql -U postgres -d $database -c "DROP ROLE IF EXISTS user_rh"
-docker exec -it postgres14 psql -U postgres -d $database -c "CREATE ROLE user_cliente NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOLOGIN;
-GRANT SELECT ON TABLE public.tb_pedido TO user_cliente;
-GRANT SELECT ON TABLE public.tb_estoque TO user_cliente;
-GRANT SELECT ON TABLE public.tb_produto TO user_cliente;
-GRANT INSERT ON TABLE public.tb_pedido TO user_cliente;"
-
-docker exec -it postgres14 psql -U postgres -d $database -c "DROP ROLE IF EXISTS user_estoquista"
-docker exec -it postgres14 psql -U postgres -d $database -c "CREATE ROLE user_estoquista NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN PASSWORD 'readonlypwd';
-GRANT SELECT ON TABLE public.tb_estoque TO user_estoquista;
-GRANT INSERT ON TABLE public.tb_estoque TO user_estoquista;
-GRANT SELECT ON TABLE public.tb_pedido TO user_estoquista;
-GRANT SELECT ON TABLE public.tb_produto TO user_estoquista;
-GRANT INSERT ON TABLE public.tb_produto TO user_estoquista;"
-
 echo "------ Drop and create TABLES ------"
 docker exec -it postgres14 psql -U $psqlUser -d $database -c "DROP TABLE IF EXISTS public.tb_funcionarios"
 docker exec -it postgres14 psql -U $psqlUser -d $database -c "CREATE TABLE public.tb_funcionarios (
@@ -44,7 +24,7 @@ docker exec -it postgres14 psql -U $psqlUser -d $database -c "CREATE TABLE publi
   cargo varchar NOT NULL,
   is_ativo bool NOT NULL,
 	dt_entrada date NOT NULL,
-	dt_desligamento date NOT NULL,
+	dt_desligamento date,
 	dt_atualizacao date NOT NULL
 )"
 
@@ -84,5 +64,25 @@ docker exec -it postgres14 psql -U $psqlUser -d $database -c "CREATE TABLE publi
     FOREIGN KEY(id_produto)
 			REFERENCES tb_produto(id)
 );"
+
+docker exec -it postgres14 psql -U postgres -d $database -c "DROP ROLE IF EXISTS user_rh"
+docker exec -it postgres14 psql -U postgres -d $database -c "CREATE ROLE user_rh NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN PASSWORD 'userrhpwd';
+GRANT INSERT ON TABLE public.tb_funcionarios TO user_rh;
+GRANT SELECT ON TABLE public.tb_funcionarios TO user_rh;"
+
+docker exec -it postgres14 psql -U postgres -d $database -c "DROP ROLE IF EXISTS user_cliente"
+docker exec -it postgres14 psql -U postgres -d $database -c "CREATE ROLE user_cliente NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOLOGIN;
+GRANT SELECT ON TABLE public.tb_pedido TO user_cliente;
+GRANT SELECT ON TABLE public.tb_estoque TO user_cliente;
+GRANT SELECT ON TABLE public.tb_produto TO user_cliente;
+GRANT INSERT ON TABLE public.tb_pedido TO user_cliente;"
+
+docker exec -it postgres14 psql -U postgres -d $database -c "DROP ROLE IF EXISTS user_estoquista"
+docker exec -it postgres14 psql -U postgres -d $database -c "CREATE ROLE user_estoquista NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN PASSWORD 'readonlypwd';
+GRANT SELECT ON TABLE public.tb_estoque TO user_estoquista;
+GRANT INSERT ON TABLE public.tb_estoque TO user_estoquista;
+GRANT SELECT ON TABLE public.tb_pedido TO user_estoquista;
+GRANT SELECT ON TABLE public.tb_produto TO user_estoquista;
+GRANT INSERT ON TABLE public.tb_produto TO user_estoquista;"
 
 echo "All steps finished!"

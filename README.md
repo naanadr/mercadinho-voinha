@@ -48,3 +48,4 @@ Para configurar o banco de dados, execute na raiz do projeto em seu terminal:
 ## Execução
 
 1. Pessoas API -> [Documentação](/mercadinho/pessoas_api)
+2. Produtos API -> [Documentação](/mercadinho/produtos_api)

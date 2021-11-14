@@ -28,12 +28,14 @@ docker exec -it postgres14 psql -U $psqlUser -d $database -c "CREATE TABLE publi
 	dt_atualizacao date NOT NULL
 )"
 
-docker exec -it postgres14 psql -U $psqlUser -d $database -c "DROP TABLE IF EXISTS public.tb_produto"
+docker exec -it postgres14 psql -U $psqlUser -d $database -c "DROP TABLE IF EXISTS public.tb_produto CASCADE"
 docker exec -it postgres14 psql -U $psqlUser -d $database -c "CREATE TABLE public.tb_produto (
 	id bigint GENERATED ALWAYS AS IDENTITY,
 	nome varchar NOT NULL,
+	marca varchar NOT NULL,
 	is_perecivel boolean NOT null,
-	PRIMARY KEY (nome),
+	dt_cadastro date NOT NULL,
+	PRIMARY KEY (nome, marca),
 	UNIQUE (id)
 )"
 
@@ -46,6 +48,7 @@ docker exec -it postgres14 psql -U $psqlUser -d $database -c "CREATE TABLE publi
 	vl_unidade float8 NOT NULL,
 	unidade_medida varchar NOT NULL,
 	dt_validade date NULL,
+	is_ativo boolean NULL,
   CONSTRAINT fk_produto
     FOREIGN KEY(id_produto)
 			REFERENCES tb_produto(id)
@@ -78,9 +81,10 @@ GRANT SELECT ON TABLE public.tb_produto TO user_cliente;
 GRANT INSERT ON TABLE public.tb_pedido TO user_cliente;"
 
 docker exec -it postgres14 psql -U postgres -d $database -c "DROP ROLE IF EXISTS user_estoquista"
-docker exec -it postgres14 psql -U postgres -d $database -c "CREATE ROLE user_estoquista NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN PASSWORD 'readonlypwd';
+docker exec -it postgres14 psql -U postgres -d $database -c "CREATE ROLE user_estoquista NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN PASSWORD 'pwduserestoquista';
 GRANT SELECT ON TABLE public.tb_estoque TO user_estoquista;
 GRANT INSERT ON TABLE public.tb_estoque TO user_estoquista;
+GRANT UPDATE ON TABLE public.tb_estoque TO user_estoquista;
 GRANT SELECT ON TABLE public.tb_pedido TO user_estoquista;
 GRANT SELECT ON TABLE public.tb_produto TO user_estoquista;
 GRANT INSERT ON TABLE public.tb_produto TO user_estoquista;"

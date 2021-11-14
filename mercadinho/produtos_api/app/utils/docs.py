@@ -6,6 +6,7 @@ ProdutosAPI é um microsserviço de gerenciamento de produtos e seu estoque.
 * Consulta de produtos
 * Cadastro de estoque
 * Consulta de estoque
+* Atualização de estoque
 """
 
 TAGS_METADATA = [

@@ -1,21 +1,29 @@
 #!/bin/bash
 
 #Set the value of variable
-database="db_mercadinho"
-psqlUser="admin_mercadinho"
-password="super_senha"
+export $(grep -v '^#' .env)
 
-echo "------ Drop and Create DATABASE ------"
-docker exec -it postgres14 psql -U postgres -c "DROP DATABASE IF EXISTS db_mercadinho"
-docker exec -it postgres14 psql -U postgres -T template1 -c "CREATE DATABASE db_mercadinho"
+echo $database_rh
+
+echo "------ Drop and Create DATABASES ------"
+docker exec -it postgres14 psql -U postgres -c "DROP DATABASE IF EXISTS $database_rh"
+docker exec -it postgres14 psql -U postgres -T template1 -c "CREATE DATABASE $database_rh"
+docker exec -it postgres14 psql -U postgres -c "DROP DATABASE IF EXISTS $database_produtos"
+docker exec -it postgres14 psql -U postgres -T template1 -c "CREATE DATABASE $database_produtos"
+docker exec -it postgres14 psql -U postgres -c "DROP DATABASE IF EXISTS $database_estoque"
+docker exec -it postgres14 psql -U postgres -T template1 -c "CREATE DATABASE $database_estoque"
 
 echo "------ Drop and Create ROLES ------"
-docker exec -it postgres14 psql -U postgres -d $database -c "DROP ROLE IF EXISTS admin_mercadinho"
-docker exec -it postgres14 psql -U postgres -d $database -c "CREATE ROLE admin_mercadinho SUPERUSER NOCREATEDB CREATEROLE NOINHERIT LOGIN PASSWORD 'super_senha'"
+docker exec -it postgres14 psql -U postgres -d $database_rh -c "DROP ROLE IF EXISTS $superUser"
+docker exec -it postgres14 psql -U postgres -d $database_rh -c "CREATE ROLE $superUser SUPERUSER NOCREATEDB CREATEROLE NOINHERIT LOGIN PASSWORD $superUserPWD"
+docker exec -it postgres14 psql -U postgres -d $database_produtos -c "DROP ROLE IF EXISTS $superUser"
+docker exec -it postgres14 psql -U postgres -d $database_produtos -c "CREATE ROLE $superUser SUPERUSER NOCREATEDB CREATEROLE NOINHERIT LOGIN PASSWORD $superUserPWD"
+docker exec -it postgres14 psql -U postgres -d $database_estoque -c "DROP ROLE IF EXISTS $superUser"
+docker exec -it postgres14 psql -U postgres -d $database_estoque -c "CREATE ROLE $superUser SUPERUSER NOCREATEDB CREATEROLE NOINHERIT LOGIN PASSWORD $superUserPWD"
 
 echo "------ Drop and create TABLES ------"
-docker exec -it postgres14 psql -U $psqlUser -d $database -c "DROP TABLE IF EXISTS public.tb_funcionarios"
-docker exec -it postgres14 psql -U $psqlUser -d $database -c "CREATE TABLE public.tb_funcionarios (
+docker exec -it postgres14 psql -U $superUser -d $database_rh -c "DROP TABLE IF EXISTS public.tb_funcionarios"
+docker exec -it postgres14 psql -U $superUser -d $database_rh -c "CREATE TABLE public.tb_funcionarios (
 	id bigint GENERATED ALWAYS AS IDENTITY,
   cpf varchar NOT NULL,
 	nome varchar NOT NULL,
@@ -28,8 +36,8 @@ docker exec -it postgres14 psql -U $psqlUser -d $database -c "CREATE TABLE publi
 	dt_atualizacao date NOT NULL
 )"
 
-docker exec -it postgres14 psql -U $psqlUser -d $database -c "DROP TABLE IF EXISTS public.tb_produto CASCADE"
-docker exec -it postgres14 psql -U $psqlUser -d $database -c "CREATE TABLE public.tb_produto (
+docker exec -it postgres14 psql -U $superUser -d $database_produtos -c "DROP TABLE IF EXISTS public.tb_produto CASCADE"
+docker exec -it postgres14 psql -U $superUser -d $database_produtos -c "CREATE TABLE public.tb_produto (
 	id bigint GENERATED ALWAYS AS IDENTITY,
 	nome varchar NOT NULL,
 	marca varchar NOT NULL,
@@ -39,8 +47,8 @@ docker exec -it postgres14 psql -U $psqlUser -d $database -c "CREATE TABLE publi
 	UNIQUE (id)
 )"
 
-docker exec -it postgres14 psql -U $psqlUser -d $database -c "DROP TABLE IF EXISTS public.tb_estoque"
-docker exec -it postgres14 psql -U $psqlUser -d $database -c "CREATE TABLE public.tb_estoque (
+docker exec -it postgres14 psql -U $superUser -d $database_estoque -c "DROP TABLE IF EXISTS public.tb_estoque"
+docker exec -it postgres14 psql -U $superUser -d $database_estoque -c "CREATE TABLE public.tb_estoque (
 	id bigint GENERATED ALWAYS AS IDENTITY,
 	dt_cadastro date NOT NULL,
 	id_produto bigint NOT NULL,
@@ -48,45 +56,24 @@ docker exec -it postgres14 psql -U $psqlUser -d $database -c "CREATE TABLE publi
 	vl_unidade float8 NOT NULL,
 	unidade_medida varchar NOT NULL,
 	dt_validade date NULL,
-	is_ativo boolean NULL,
-  CONSTRAINT fk_produto
-    FOREIGN KEY(id_produto)
-			REFERENCES tb_produto(id)
+	is_ativo boolean NULL
 )"
 
-docker exec -it postgres14 psql -U $psqlUser -d $database -c "DROP TABLE IF EXISTS public.tb_pedido"
-docker exec -it postgres14 psql -U $psqlUser -d $database -c "CREATE TABLE public.tb_pedido (
-	id bigint GENERATED ALWAYS AS IDENTITY,
-	dt_cadastro date NOT NULL,
-	id_produto int NOT NULL,
-	qtd_produto int NOT NULL,
-	id_pedido int NOT NULL,
-	vl_unidade float8 NOT NULL,
-	vl_total_produto float8 NOT NULL,
-  CONSTRAINT fk_produto
-    FOREIGN KEY(id_produto)
-			REFERENCES tb_produto(id)
-);"
+echo "------ Drop and create USERS ------"
+docker exec -it postgres14 psql -U superUser -d $database_rh -c "DROP ROLE IF EXISTS $userAPIRH"
+docker exec -it postgres14 psql -U superUser -d $database_rh -c "CREATE ROLE $userAPIRH NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN PASSWORD $userAPIRHPWD;
+GRANT INSERT ON TABLE public.tb_funcionarios TO $userAPIRH;
+GRANT SELECT ON TABLE public.tb_funcionarios TO $userAPIRH;"
 
-docker exec -it postgres14 psql -U postgres -d $database -c "DROP ROLE IF EXISTS user_rh"
-docker exec -it postgres14 psql -U postgres -d $database -c "CREATE ROLE user_rh NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN PASSWORD 'userrhpwd';
-GRANT INSERT ON TABLE public.tb_funcionarios TO user_rh;
-GRANT SELECT ON TABLE public.tb_funcionarios TO user_rh;"
+docker exec -it postgres14 psql -U postgres -d $database_produtos -c "DROP ROLE IF EXISTS $userAPIProduto"
+docker exec -it postgres14 psql -U postgres -d $database_produtos -c "CREATE ROLE $userAPIProduto NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN PASSWORD $userAPIProdutoPWD;
+GRANT SELECT ON TABLE public.tb_produto TO $userAPIProduto;
+GRANT INSERT ON TABLE public.tb_produto TO $userAPIProduto;"
 
-docker exec -it postgres14 psql -U postgres -d $database -c "DROP ROLE IF EXISTS user_cliente"
-docker exec -it postgres14 psql -U postgres -d $database -c "CREATE ROLE user_cliente NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOLOGIN;
-GRANT SELECT ON TABLE public.tb_pedido TO user_cliente;
-GRANT SELECT ON TABLE public.tb_estoque TO user_cliente;
-GRANT SELECT ON TABLE public.tb_produto TO user_cliente;
-GRANT INSERT ON TABLE public.tb_pedido TO user_cliente;"
-
-docker exec -it postgres14 psql -U postgres -d $database -c "DROP ROLE IF EXISTS user_estoquista"
-docker exec -it postgres14 psql -U postgres -d $database -c "CREATE ROLE user_estoquista NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN PASSWORD 'pwduserestoquista';
-GRANT SELECT ON TABLE public.tb_estoque TO user_estoquista;
-GRANT INSERT ON TABLE public.tb_estoque TO user_estoquista;
-GRANT UPDATE ON TABLE public.tb_estoque TO user_estoquista;
-GRANT SELECT ON TABLE public.tb_pedido TO user_estoquista;
-GRANT SELECT ON TABLE public.tb_produto TO user_estoquista;
-GRANT INSERT ON TABLE public.tb_produto TO user_estoquista;"
+docker exec -it postgres14 psql -U postgres -d $database_estoque -c "DROP ROLE IF EXISTS $userAPIEstoque"
+docker exec -it postgres14 psql -U postgres -d $database_estoque -c "CREATE ROLE $userAPIEstoque NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN PASSWORD $userAPIEstoquePWD;
+GRANT SELECT ON TABLE public.tb_estoque TO $userAPIEstoque;
+GRANT INSERT ON TABLE public.tb_estoque TO $userAPIEstoque;
+GRANT UPDATE ON TABLE public.tb_estoque TO $userAPIEstoque;"
 
 echo "All steps finished!"

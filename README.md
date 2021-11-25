@@ -39,7 +39,7 @@ docker run --rm -d --name=postgres14 -p 5432:5432 -v postgres-volume:/var/lib/po
 
 ### Configuração do Banco de Dados
 
-Para configurar o banco de dados, execute na raiz do projeto em seu terminal:
+Para configurar o banco de dados corretamente, crie um arquivo `.env` com as variáveis contidas no '.env_template' e execute na raiz do projeto em seu terminal o comando:
 
 ```bash
 ./db_config.sh

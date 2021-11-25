@@ -3,8 +3,6 @@
 #Set the value of variable
 export $(grep -v '^#' .env)
 
-echo $database_rh
-
 echo "------ Drop and Create DATABASES ------"
 docker exec -it postgres14 psql -U postgres -c "DROP DATABASE IF EXISTS $database_rh"
 docker exec -it postgres14 psql -U postgres -T template1 -c "CREATE DATABASE $database_rh"
@@ -15,11 +13,11 @@ docker exec -it postgres14 psql -U postgres -T template1 -c "CREATE DATABASE $da
 
 echo "------ Drop and Create ROLES ------"
 docker exec -it postgres14 psql -U postgres -d $database_rh -c "DROP ROLE IF EXISTS $superUser"
-docker exec -it postgres14 psql -U postgres -d $database_rh -c "CREATE ROLE $superUser SUPERUSER NOCREATEDB CREATEROLE NOINHERIT LOGIN PASSWORD $superUserPWD"
+docker exec -it postgres14 psql -U postgres -d $database_rh -c "CREATE ROLE $superUser SUPERUSER NOCREATEDB CREATEROLE NOINHERIT LOGIN PASSWORD '$superUserPWD'"
 docker exec -it postgres14 psql -U postgres -d $database_produtos -c "DROP ROLE IF EXISTS $superUser"
-docker exec -it postgres14 psql -U postgres -d $database_produtos -c "CREATE ROLE $superUser SUPERUSER NOCREATEDB CREATEROLE NOINHERIT LOGIN PASSWORD $superUserPWD"
+docker exec -it postgres14 psql -U postgres -d $database_produtos -c "CREATE ROLE $superUser SUPERUSER NOCREATEDB CREATEROLE NOINHERIT LOGIN PASSWORD '$superUserPWD'"
 docker exec -it postgres14 psql -U postgres -d $database_estoque -c "DROP ROLE IF EXISTS $superUser"
-docker exec -it postgres14 psql -U postgres -d $database_estoque -c "CREATE ROLE $superUser SUPERUSER NOCREATEDB CREATEROLE NOINHERIT LOGIN PASSWORD $superUserPWD"
+docker exec -it postgres14 psql -U postgres -d $database_estoque -c "CREATE ROLE $superUser SUPERUSER NOCREATEDB CREATEROLE NOINHERIT LOGIN PASSWORD '$superUserPWD'"
 
 echo "------ Drop and create TABLES ------"
 docker exec -it postgres14 psql -U $superUser -d $database_rh -c "DROP TABLE IF EXISTS public.tb_funcionarios"
@@ -60,18 +58,18 @@ docker exec -it postgres14 psql -U $superUser -d $database_estoque -c "CREATE TA
 )"
 
 echo "------ Drop and create USERS ------"
-docker exec -it postgres14 psql -U superUser -d $database_rh -c "DROP ROLE IF EXISTS $userAPIRH"
-docker exec -it postgres14 psql -U superUser -d $database_rh -c "CREATE ROLE $userAPIRH NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN PASSWORD $userAPIRHPWD;
+docker exec -it postgres14 psql -U $superUser -d $database_rh -c "DROP ROLE IF EXISTS $userAPIRH"
+docker exec -it postgres14 psql -U $superUser -d $database_rh -c "CREATE ROLE $userAPIRH NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN PASSWORD '$userAPIRHPWD';
 GRANT INSERT ON TABLE public.tb_funcionarios TO $userAPIRH;
 GRANT SELECT ON TABLE public.tb_funcionarios TO $userAPIRH;"
 
-docker exec -it postgres14 psql -U postgres -d $database_produtos -c "DROP ROLE IF EXISTS $userAPIProduto"
-docker exec -it postgres14 psql -U postgres -d $database_produtos -c "CREATE ROLE $userAPIProduto NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN PASSWORD $userAPIProdutoPWD;
+docker exec -it postgres14 psql -U $superUser -d $database_produtos -c "DROP ROLE IF EXISTS $userAPIProduto"
+docker exec -it postgres14 psql -U $superUser -d $database_produtos -c "CREATE ROLE $userAPIProduto NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN PASSWORD '$userAPIProdutoPWD';
 GRANT SELECT ON TABLE public.tb_produto TO $userAPIProduto;
 GRANT INSERT ON TABLE public.tb_produto TO $userAPIProduto;"
 
-docker exec -it postgres14 psql -U postgres -d $database_estoque -c "DROP ROLE IF EXISTS $userAPIEstoque"
-docker exec -it postgres14 psql -U postgres -d $database_estoque -c "CREATE ROLE $userAPIEstoque NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN PASSWORD $userAPIEstoquePWD;
+docker exec -it postgres14 psql -U $superUser -d $database_estoque -c "DROP ROLE IF EXISTS $userAPIEstoque"
+docker exec -it postgres14 psql -U $superUser -d $database_estoque -c "CREATE ROLE $userAPIEstoque NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN PASSWORD '$userAPIEstoquePWD';
 GRANT SELECT ON TABLE public.tb_estoque TO $userAPIEstoque;
 GRANT INSERT ON TABLE public.tb_estoque TO $userAPIEstoque;
 GRANT UPDATE ON TABLE public.tb_estoque TO $userAPIEstoque;"

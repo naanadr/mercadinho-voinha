@@ -15,5 +15,5 @@ Crie um arquivo `.env` com os mesmos campos contidos no [`.env_example`](/.env_e
 
 Para executar a API, execute o seguinte comando:
 ```bash
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --port 8001
 ```
